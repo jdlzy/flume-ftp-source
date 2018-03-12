@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="flumeFTPsource" verbose="1" parallel="false">
+    <test name="FtpSource" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.keedio.flume.source.ftp.source.ftp.EmbeddedFtpSourceTest" />
+            <class name="org.keedio.flume.source.ftp.source.ftp.ExternalFtpSourceTests" />
+            <class name="org.keedio.flume.source.ftp.source.TestFileUtilsTest" />
+        </classes>
+    </test>
+</suite>
