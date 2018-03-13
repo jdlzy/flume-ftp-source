@@ -2,12 +2,14 @@ package com.lzy.poi.test;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import static org.apache.poi.xssf.usermodel.XSSFWorkbookType.XLSX;
 
 /**
  * Created by taihe on 2018/3/12.
@@ -15,7 +17,7 @@ import java.io.InputStream;
 public class ParseExcelOntescomm {
     public static void main(String[] args) throws EncryptedDocumentException, InvalidFormatException, IOException {
 
-        InputStream inputStream = new FileInputStream("E:/湖南2G基站工参.xlsx");
+        InputStream inputStream = new FileInputStream("E:/2g.xlsx");
         //InputStream inp = new FileInputStream("C:/Users/H__D/Desktop/workbook.xls");
 
         Workbook workbook = new XSSFWorkbook(inputStream);
@@ -25,8 +27,9 @@ public class ParseExcelOntescomm {
         for (Row row : sheet) {
             if(row.getRowNum()==0){continue;}
                 StringBuilder sb=new StringBuilder();
+
             for (Cell cell : row) {
-                sb.append(formatter.formatCellValue(cell));
+                sb.append(cell.getStringCellValue());
                 sb.append(",");
             }
             sb.deleteCharAt(sb.length()-1);

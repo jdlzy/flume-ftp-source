@@ -2,6 +2,7 @@ package com.lzy.poi.test;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
 
 import java.io.IOException;
 
@@ -15,4 +16,5 @@ public class FileTypeTest {
         String[] fileSuffixs=fileName.split("\\.",-1);
         String fileType=fileSuffixs[fileSuffixs.length-1];
         System.out.println(fileType);
+
     }}

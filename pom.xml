@@ -14,6 +14,7 @@
         <maven.compiler.target>1.7</maven.compiler.target>
         <scala.version>2.10.4</scala.version>
         <flume.version>1.7.0</flume.version>
+        <poi.version>3.17</poi.version>
     </properties>
 
     <dependencies>
@@ -81,18 +82,18 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.14</version>
+            <version>${poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>3.14</version>
+            <version>${poi.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml-schemas</artifactId>
-            <version>3.14</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.poi</groupId>-->
+            <!--<artifactId>poi-ooxml-schemas</artifactId>-->
+            <!--<version>3.17</version>-->
+        <!--</dependency>-->
 
     </dependencies>
 

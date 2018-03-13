@@ -13,7 +13,7 @@ import org.apache.flume.conf.Configurable;
 import org.apache.flume.event.SimpleEvent;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+//import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.keedio.flume.source.ftp.client.filters.KeedioFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -299,14 +299,15 @@ public class Source extends AbstractSource implements Configurable, PollableSour
             if (fileType.equals("xlsx")) {
                 try {
                     inputStream.skip(position);
-                    Workbook workbook = new XSSFWorkbook(inputStream);
+                    DataFormatter formatter = new DataFormatter();
+                    Workbook workbook = WorkbookFactory.create(inputStream);
                     Sheet sheet = workbook.getSheetAt(0);
 
-                    DataFormatter formatter = new DataFormatter();
                     for (Row row : sheet) {
                         if(row.getRowNum()==0){continue;}
                         StringBuilder sb = new StringBuilder();
                         for (Cell cell : row) {
+
                             sb.append(formatter.formatCellValue(cell));
                             sb.append(",");
                         }
@@ -318,6 +319,8 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                     successRead = false;
+                } catch (InvalidFormatException e) {
+                    e.printStackTrace();
                 }
 
                 //如果不是excel文件
