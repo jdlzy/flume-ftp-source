@@ -3,6 +3,7 @@ package com.lzy.poi.test;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,11 +18,12 @@ public class ParseExcelOntescomm {
         InputStream inputStream = new FileInputStream("E:/湖南2G基站工参.xlsx");
         //InputStream inp = new FileInputStream("C:/Users/H__D/Desktop/workbook.xls");
 
-        Workbook workbook = WorkbookFactory.create(inputStream);
+        Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
 
         DataFormatter formatter = new DataFormatter();
         for (Row row : sheet) {
+            if(row.getRowNum()==0){continue;}
                 StringBuilder sb=new StringBuilder();
             for (Cell cell : row) {
                 sb.append(formatter.formatCellValue(cell));
