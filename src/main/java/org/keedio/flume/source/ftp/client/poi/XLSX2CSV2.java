@@ -160,19 +160,19 @@ public class XLSX2CSV2 {
 
     /**
      * 得到excel的记录
-     * @param excelPath
+     * @param inputStream
      * @param minColumns 输出多少列
      * @return
      * @throws Exception
      */
-    public static List<String[]> getRecords(String excelPath,int minColumns) throws Exception{
-        File xlsxFile = new File(excelPath);
-        if (!xlsxFile.exists()) {
-            System.err.println("Not found or not a file: " + xlsxFile.getPath());
-            return null;
-        }
+    public static List<String[]> getRecords(InputStream inputStream,int minColumns) throws Exception{
+//        File xlsxFile = new File(excelPath);
+//        if (!xlsxFile.exists()) {
+//            System.err.println("Not found or not a file: " + xlsxFile.getPath());
+//            return null;
+//        }
         // The package open is instantaneous, as it should be.
-        OPCPackage p = OPCPackage.open(xlsxFile.getPath(), PackageAccess.READ);
+        OPCPackage p = OPCPackage.open(inputStream);
         XLSX2CSV2 xlsx2csv = new XLSX2CSV2(p,  minColumns);
         List<String[]>list=xlsx2csv.process();
         p.close();
@@ -189,18 +189,18 @@ public class XLSX2CSV2 {
         // The package open is instantaneous, as it should be.
         OPCPackage p = OPCPackage.open(xlsxFile.getPath(), PackageAccess.READ);
         XLSX2CSV xlsx2csv = new XLSX2CSV(p,  4);*/
-        List<String[]>list=getRecords("/home/lhy/d3a65e38583640eaa6e81343311f6d38.xls",4);
+//        List<String[]>list=getRecords("/home/lhy/d3a65e38583640eaa6e81343311f6d38.xls",4);
         // p.close();
 
-        for(int i=0;i<list.size();i++)
-        {
-            System.out.println("******************:"+i);
-            for(String a:list.get(i))
-            {
-                System.out.println(a);
-                System.out.println("------------------------");
-            }
-            System.out.println("#####################");
-        }
+//        for(int i=0;i<list.size();i++)
+//        {
+//            System.out.println("******************:"+i);
+//            for(String a:list.get(i))
+//            {
+//                System.out.println(a);
+//                System.out.println("------------------------");
+//            }
+//            System.out.println("#####################");
+//        }
     }
 }
