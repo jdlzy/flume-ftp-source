@@ -3,6 +3,7 @@
  */
 package org.keedio.flume.source.ftp.source;
 
+import java.io.*;
 import java.util.*;
 
 import org.apache.flume.Context;
@@ -11,17 +12,22 @@ import org.apache.flume.EventDeliveryException;
 import org.apache.flume.PollableSource;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.event.SimpleEvent;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
 import org.apache.poi.ss.usermodel.*;
 //import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xslf.usermodel.XSLFFactory;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.keedio.flume.source.ftp.client.filters.KeedioFileFilter;
+import org.keedio.flume.source.ftp.client.poi.XLSX2CSV;
+import org.keedio.flume.source.ftp.client.poi.XLSX2CSV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.flume.ChannelException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ByteArrayOutputStream;
 
 import org.keedio.flume.source.ftp.source.utils.FTPSourceEventListener;
 
@@ -29,15 +35,15 @@ import org.keedio.flume.source.ftp.metrics.SourceCounter;
 
 import java.util.List;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 import org.keedio.flume.source.ftp.client.factory.SourceFactory;
 import org.keedio.flume.source.ftp.client.KeedioSource;
 
 import java.nio.charset.Charset;
 
 import org.apache.flume.source.AbstractSource;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author luislazaro lalazaro@keedio.com - KEEDIO
@@ -285,29 +291,29 @@ public class Source extends AbstractSource implements Configurable, PollableSour
      */
     public boolean readStream(InputStream inputStream, long position, String fileName, String filePath) {
         LOGGER.info("fileName:" + fileName);
-        System.out.println("fileName:" + fileName);
-        String[] fileSuffixs = fileName.split("\\.", -1);
-        String fileType = fileSuffixs[fileSuffixs.length - 1];
         if (inputStream == null) {
             return false;
         }
+        String[] fileSuffixs = fileName.split("\\.", -1);
+        String fileType = fileSuffixs[fileSuffixs.length - 1];
 
         boolean successRead = true;
 
         if (keedioSource.isFlushLines()) {
             //判断是否为csv
             if (fileType.equals("xlsx")) {
+                //在数据量太大的时候会导致zip解压异常，没有办法解决。是poi的冲突问题
+/*                    DataFormatter formatter = new DataFormatter();
+                    Workbook workbook=null;
                 try {
                     inputStream.skip(position);
-                    DataFormatter formatter = new DataFormatter();
-                    Workbook workbook = WorkbookFactory.create(inputStream);
+//                     workbook = WorkbookFactory.create(inputStream);
+                    workbook=new XSSFWorkbook(inputStream);
                     Sheet sheet = workbook.getSheetAt(0);
-
                     for (Row row : sheet) {
                         if(row.getRowNum()==0){continue;}
                         StringBuilder sb = new StringBuilder();
                         for (Cell cell : row) {
-
                             sb.append(formatter.formatCellValue(cell));
                             sb.append(",");
                         }
@@ -315,14 +321,38 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                         //输出每一行，使用逗号分隔
                         processMessage(sb.toString().getBytes(), fileName, filePath);
                     }
+
                     inputStream.close();
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
+                    e.printStackTrace();
                     successRead = false;
-                } catch (InvalidFormatException e) {
+                } catch (Exception e){
+                    LOGGER.error(e.getMessage(),e);
+                    successRead = false;
+                }finally{
+                    try {
+                        workbook.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }*/
+                try {
+                    inputStream.skip(position);
+                    List<String[]> list= XLSX2CSV2.getRecords(inputStream,4);
+                    for(String[] records:list){
+                        StringBuilder sb=new StringBuilder("");
+
+                        for (String record:records){
+                            sb.append(record);
+                            sb.append(",");
+                        }
+                        processMessage(sb.deleteCharAt(sb.length() - 1).toString().getBytes(), fileName, filePath);
+                    }
+                    inputStream.close();
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-
                 //如果不是excel文件
             } else {
                 try {
