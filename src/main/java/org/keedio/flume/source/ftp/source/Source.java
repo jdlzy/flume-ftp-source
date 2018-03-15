@@ -17,6 +17,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 //import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xslf.usermodel.XSLFFactory;
@@ -190,6 +191,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
             dirToList += "/" + currentDir;
         }
         List<T> list = keedioSource.listElements(dirToList, keedioFileFilter);
+        ZipSecureFile.setMinInflateRatio(-1.0d);
         if (!(list.isEmpty())) {
 
             for (T element : list) {
@@ -234,6 +236,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                     InputStream inputStream = null;
                     try {
                         inputStream = keedioSource.getInputStream(element);
+//                        ZipSecureFile.setMinInflateRatio(-1.0d);
                         listener.fileStreamRetrieved();
 
                         if (!readStream(inputStream, position, elementName, dirToList)) {
@@ -303,11 +306,26 @@ public class Source extends AbstractSource implements Configurable, PollableSour
             //判断是否为csv
             if (fileType.equals("xlsx")) {
                 //在数据量太大的时候会导致zip解压异常，没有办法解决。是poi的冲突问题
-/*                    DataFormatter formatter = new DataFormatter();
+               /* byte[] b = new byte[1024];
+                         int c = 0;
+                         String str = "";
+
+                try {
+                    while((c = inputStream.read(b)) != -1){
+                             str += new String(b,0,c);//在此拼接
+                        System.out.println(c);
+                        }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
+
+                    DataFormatter formatter = new DataFormatter();
                     Workbook workbook=null;
                 try {
-                    inputStream.skip(position);
+//                    inputStream.skip(position);
 //                     workbook = WorkbookFactory.create(inputStream);
+                    ZipSecureFile.setMinInflateRatio(-1.0d);
                     workbook=new XSSFWorkbook(inputStream);
                     Sheet sheet = workbook.getSheetAt(0);
                     for (Row row : sheet) {
@@ -336,10 +354,10 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }*/
-                try {
+                }
+/*                try {
                     inputStream.skip(position);
-                    List<String[]> list= XLSX2CSV2.getRecords(inputStream,4);
+                    List<String[]> list= XLSX2CSV2.getRecords(inputStream,3);
                     for(String[] records:list){
                         StringBuilder sb=new StringBuilder("");
 
@@ -352,7 +370,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                     inputStream.close();
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
+                }*/
                 //如果不是excel文件
             } else {
                 try {
