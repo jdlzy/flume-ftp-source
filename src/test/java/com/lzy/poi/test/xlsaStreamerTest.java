@@ -25,6 +25,7 @@ public class xlsaStreamerTest {
                     rowCacheSize(100)
                     .bufferSize(4096).open(inputStream);
             Sheet sheet = wk.getSheetAt(0);
+            sheet.getFirstRowNum();
             for (Row row : sheet) {
                 System.out.println("开始遍历第" + row.getRowNum() + "行数据：");
                 //遍历所有的列

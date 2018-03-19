@@ -5,18 +5,13 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.keedio.flume.source.ftp.client.poi.XLSX2CSV;
+import org.lzy.poi.xlsx2csv.poi.XLSX2CSV;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-
-import static org.apache.poi.xssf.usermodel.XSSFWorkbookType.XLSX;
 
 /**
  * Created by taihe on 2018/3/12.

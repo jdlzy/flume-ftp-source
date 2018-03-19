@@ -29,13 +29,17 @@
             <artifactId>commons-net</artifactId>
             <version>3.3</version>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>commons-io</groupId>-->
+            <!--<artifactId>commons-io</artifactId>-->
+            <!--<version>2.6</version>-->
+            <!--<scope>provided</scope>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.4</version>
-            <scope>provided</scope>
+            <version>2.6</version>
         </dependency>
-
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -61,12 +65,7 @@
             <version>1.9.5</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.sshd</groupId>
-            <artifactId>sshd-core</artifactId>
-            <version>0.14.0</version>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
@@ -76,7 +75,7 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.12</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -89,12 +88,38 @@
             <artifactId>poi-ooxml</artifactId>
             <version>${poi.version}</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.monitorjbl/xlsx-streamer -->
+        <dependency>
+            <groupId>com.monitorjbl</groupId>
+            <artifactId>xlsx-streamer</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+
+
         <!--<dependency>-->
             <!--<groupId>org.apache.poi</groupId>-->
             <!--<artifactId>poi-ooxml-schemas</artifactId>-->
             <!--<version>3.17</version>-->
         <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.apache.maven.plugins</groupId>-->
+        <!--<artifactId>maven-compiler-plugin</artifactId>-->
+        <!--<version>3.5.1</version>-->
+        <!--</dependency>-->
+        <dependency>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.12.4</version>
+        </dependency>
 
+
+
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-core</artifactId>
+            <version>0.14.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
 </project>
