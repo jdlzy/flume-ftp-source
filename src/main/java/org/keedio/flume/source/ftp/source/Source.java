@@ -6,6 +6,7 @@ package org.keedio.flume.source.ftp.source;
 import java.io.*;
 import java.util.*;
 
+import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.EventDeliveryException;
@@ -106,7 +107,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                 workingDirectory = keedioSource.getDirectoryserver();
             }
 
-            LOGGER.info("Actual dir:  " + workingDirectory + " files: "
+            LOGGER.info("当前监控:  " + workingDirectory + " 文件数量: "
                     + keedioSource.getFileList().size());
 
             discoverElements(keedioSource, workingDirectory, "", 0);
@@ -184,7 +185,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     public <T> void discoverElements(KeedioSource keedioSource, String parentDir, String currentDir, int level) throws
             IOException {
 
-        long position = 0L;
+    long position = 0L;
 //文件目录
         String dirToList = parentDir;
         if (!("").equals(currentDir)) {
@@ -213,7 +214,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                     if (!(keedioSource.getFileList().containsKey(dirToList + "/" + elementName))) { //new file
                         sourceCounter.incrementFilesCount(); //include all files, even not yet processed
                         position = 0L;
-                        LOGGER.info("Discovered: " + elementName + " ,size: " + keedioSource.getObjectSize(element));
+                        LOGGER.info("新增: " + elementName + " ,文件大小: " + keedioSource.getObjectSize(element)/1024+"KB");
                     } else { //known file
                         long prevSize = (long) keedioSource.getFileList().get(dirToList + "/" + elementName);
                         position = prevSize;
@@ -255,7 +256,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                             }
 
                             LOGGER
-                                    .info("Processed:  " + elementName + " ,total files: " + this.keedioSource.getFileList().size() + "\n");
+                                    .info("接收处理:  " + elementName + " ,总文件数: " + this.keedioSource.getFileList().size() + "\n");
 
                         } else {
                             handleProcessError(elementName);
@@ -306,30 +307,26 @@ public class Source extends AbstractSource implements Configurable, PollableSour
             //判断是否为csv
             if (fileType.equals("xlsx")) {
                 //在数据量太大的时候会导致zip解压异常，没有办法解决。是poi的冲突问题
-               /* byte[] b = new byte[1024];
-                         int c = 0;
-                         String str = "";
 
-                try {
-                    while((c = inputStream.read(b)) != -1){
-                             str += new String(b,0,c);//在此拼接
-                        System.out.println(c);
-                        }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
-
-                    DataFormatter formatter = new DataFormatter();
-                    Workbook workbook=null;
+                DataFormatter formatter = new DataFormatter();
+                XSSFWorkbook workbook = null;
                 try {
 //                    inputStream.skip(position);
 //                     workbook = WorkbookFactory.create(inputStream);
-                    ZipSecureFile.setMinInflateRatio(-1.0d);
-                    workbook=new XSSFWorkbook(inputStream);
+//                    ZipSecureFile.setMinInflateRatio(-1.0d);
+
+//                    Workbook wk = StreamingReader.builder().
+//                            rowCacheSize(100)
+//                            .bufferSize(4096).open(inputStream);
+//                    Sheet sheet = wk.getSheetAt(0);
+
+                    workbook = new XSSFWorkbook(inputStream);
                     Sheet sheet = workbook.getSheetAt(0);
+
                     for (Row row : sheet) {
-                        if(row.getRowNum()==0){continue;}
+                        if (row.getRowNum() == 0) {
+                            continue;
+                        }
                         StringBuilder sb = new StringBuilder();
                         for (Cell cell : row) {
                             sb.append(formatter.formatCellValue(cell));
@@ -340,21 +337,22 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                         processMessage(sb.toString().getBytes(), fileName, filePath);
                     }
 
-                    inputStream.close();
+//                    inputStream.close();
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                     e.printStackTrace();
                     successRead = false;
-                } catch (Exception e){
-                    LOGGER.error(e.getMessage(),e);
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
                     successRead = false;
-                }finally{
-                    try {
-                        workbook.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
+//                finally {
+//                    try {
+//                        workbook.close();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
 /*                try {
                     inputStream.skip(position);
                     List<String[]> list= XLSX2CSV2.getRecords(inputStream,3);
@@ -377,8 +375,10 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                     inputStream.skip(position);
                     try (BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
                         String line = null;
-
+                        int index=0;
                         while ((line = in.readLine()) != null) {
+                            index++;
+                            if(index==1){continue;}
                             processMessage(line.getBytes(), fileName, filePath);
                         }
 
