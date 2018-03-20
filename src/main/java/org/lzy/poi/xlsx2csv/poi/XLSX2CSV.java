@@ -17,29 +17,32 @@ package org.lzy.poi.xlsx2csv.poi;
 ==================================================================== */
 
 
-        import java.io.*;
+import java.io.*;
 
-        import javax.xml.parsers.ParserConfigurationException;
-        import javax.xml.parsers.SAXParser;
-        import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
-        import com.monitorjbl.xlsx.StreamingReader;
-        import org.apache.log4j.Logger;
-        import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
-        import org.apache.poi.openxml4j.opc.OPCPackage;
-        import org.apache.poi.openxml4j.opc.PackageAccess;
-        import org.apache.poi.ss.usermodel.*;
-        import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
-        import org.apache.poi.xssf.eventusermodel.XSSFReader;
-        import org.apache.poi.xssf.model.StylesTable;
-        import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-        import org.apache.poi.xssf.usermodel.XSSFRichTextString;
-        import org.xml.sax.Attributes;
-        import org.xml.sax.ContentHandler;
-        import org.xml.sax.InputSource;
-        import org.xml.sax.SAXException;
-        import org.xml.sax.XMLReader;
-        import org.xml.sax.helpers.DefaultHandler;
+import com.monitorjbl.xlsx.StreamingReader;
+import org.apache.log4j.Logger;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.poi.xssf.model.StylesTable;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.lzy.flume.source.ftp.source.Source;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+
+import static org.lzy.flume.source.ftp.source.Source.table2fieldSizeMap;
 
 /**
  * A rudimentary XLSX -> CSV processor modeled on the
@@ -65,7 +68,7 @@ package org.lzy.poi.xlsx2csv.poi;
  * @author Chris Lott
  */
 public class XLSX2CSV {
-    private static Logger log= Logger.getLogger(XLSX2CSV.class);
+    private static Logger log = Logger.getLogger(XLSX2CSV.class);
 
     /**
      * The type of the data value is indicated by an attribute on the cell.
@@ -159,7 +162,7 @@ public class XLSX2CSV {
         public void startElement(String uri, String localName, String name,
                                  Attributes attributes) throws SAXException {
 
-            if ("inlineStr".equals(name) || "v".equals(name)|| "is".equals(name)) {
+            if ("inlineStr".equals(name) || "v".equals(name) || "is".equals(name)) {
                 vIsOpen = true;
                 // Clear contents cache
                 value.setLength(0);
@@ -248,8 +251,7 @@ public class XLSX2CSV {
                             int idx = Integer.parseInt(sstIndex);
                             XSSFRichTextString rtss = new XSSFRichTextString(sharedStringsTable.getEntryAt(idx));
                             thisStr = '"' + rtss.toString() + '"';
-                        }
-                        catch (NumberFormatException ex) {
+                        } catch (NumberFormatException ex) {
                             output.println("Failed to parse SST index '" + sstIndex + "': " + ex.toString());
                         }
                         break;
@@ -333,7 +335,7 @@ public class XLSX2CSV {
 
     private OPCPackage xlsxPackage;
     private int minColumns;
-    private PrintStream  output;
+    private PrintStream output;
 
     /**
      * Creates a new XLSX -> CSV converter
@@ -347,7 +349,9 @@ public class XLSX2CSV {
         this.output = output;
         this.minColumns = minColumns;
     }
-public XLSX2CSV(){}
+
+    public XLSX2CSV() {
+    }
 
     /**
      * Parses and shows the content of one sheet
@@ -391,7 +395,7 @@ public XLSX2CSV(){}
         while (iter.hasNext()) {
             InputStream stream = iter.next();
             String sheetName = iter.getSheetName();
-            log.info("["+sheetName+"]正在解析中...");
+            log.info("Sheet[" + sheetName + "]正在解析中...");
 //            this.output.println();
 //            this.output.println(sheetName + " [index=" + index + "]:");
             processSheet(styles, strings, stream);
@@ -403,6 +407,7 @@ public XLSX2CSV(){}
 
     /**
      * 重载的方法读取excel方法
+     *
      * @param inputExcelPath
      * @param outputFilePath
      * @throws OpenXML4JException
@@ -410,13 +415,14 @@ public XLSX2CSV(){}
      * @throws SAXException
      * @throws IOException
      */
-    public static void saveToCSV(String inputExcelPath,String outputFilePath) throws OpenXML4JException, ParserConfigurationException, SAXException, IOException {
-            File file = new File(inputExcelPath);
-        saveToCSV(file,outputFilePath);
+    public static void saveToCSV(String inputExcelPath, String outputFilePath) throws OpenXML4JException, ParserConfigurationException, SAXException, IOException {
+        File file = new File(inputExcelPath);
+        saveToCSV(file, outputFilePath);
     }
 
     /**
-     *      * 读取excel文件，并将其转换为csv文件保存在指定目录
+     * * 读取excel文件，并将其转换为csv文件保存在指定目录
+     *
      * @param file
      * @param outputFilePath
      * @throws OpenXML4JException
@@ -424,38 +430,44 @@ public XLSX2CSV(){}
      * @throws ParserConfigurationException
      * @throws SAXException
      */
-    public static  void saveToCSV(File file,String outputFilePath) throws OpenXML4JException, IOException, ParserConfigurationException, SAXException {
-    File outFile = new File(outputFilePath);
-    int columns = -1;
-    //获取当前表的表头长度
-    try {
-        Workbook wk = StreamingReader.builder()
-                .rowCacheSize(10)
-                .bufferSize(1024000)
-                .open(file);
-        Sheet sheet = wk.getSheetAt(0);
-        for (Row row : sheet) {
-            if (row.getRowNum() == 0) {
-                columns = row.getLastCellNum();
-                log.info("........................................");
-                log.info("导入文件字段总数："+columns);
-                break;
-            }
+    public static void saveToCSV(File file, String outputFilePath) throws OpenXML4JException, IOException, ParserConfigurationException, SAXException {
+        File outFile = new File(outputFilePath);
+        int columns = -1;
+        //获取当前表的表头长度
+        try {
+
+//        Workbook wk = StreamingReader.builder()
+//                .rowCacheSize(10)
+//                .bufferSize(1024000)
+//                .open(file);
+//        Sheet sheet = wk.getSheetAt(0);
+//        for (Row row : sheet) {
+//            if (row.getRowNum() == 0) {
+//                columns = row.getLastCellNum();
+//                log.info("........................................");
+//                log.info("导入文件字段总数："+columns);
+//                break;
+//            }
+//        }
+//        wk.close();
+            String tableType = file.getName().split("_")[0];
+            columns = Source.table2fieldSizeMap.get(tableType);
+            log.info("........................................");
+            log.info("导入文件字段总数：" + columns);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("导入失败，获取excel信息失败：" + file.getPath());
         }
-        wk.close();
-    } catch (IOException e) {
-        e.printStackTrace();
-        log.error("导入失败，获取excel信息失败："+file.getPath());
-    }
-    OPCPackage p = OPCPackage.open(file.getPath(), PackageAccess.READ);
+        OPCPackage p = OPCPackage.open(file.getPath(), PackageAccess.READ);
         PrintStream output = new PrintStream(outFile);
         XLSX2CSV xlsx2csv = new XLSX2CSV(p, output, columns - 1);
-        log.info("正在解析["+file.getPath()+"]......");
+        log.info("正在解析[" + file.getPath() + "]......");
         xlsx2csv.process();
-        log.info("["+file.getPath()+"]文件解析完成......");
+        log.info("[" + file.getPath() + "]文件解析完成......");
         log.info("........................................");
 
     }
+
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
             System.err.println("Use:");
