@@ -6,6 +6,7 @@ package org.lzy.flume.source.ftp.source;
 import java.io.*;
 import java.util.*;
 
+import com.google.common.base.Preconditions;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.EventDeliveryException;
@@ -52,6 +53,8 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     private String workingDirectory;
     private KeedioFileFilter keedioFileFilter;
 
+    private String table2fieldSize;
+    public static Map<String,Integer> table2fieldSizeMap=new HashMap<String,Integer>();
     /**
      * Request keedioSource to the factory
      *
@@ -79,6 +82,9 @@ public class Source extends AbstractSource implements Configurable, PollableSour
         workingDirectory = keedioSource.getWorkingDirectory();
         keedioFileFilter = new KeedioFileFilter(keedioSource.getKeedioFilterRegex());
         keedioSource.checkPreviousMap();
+        //获取每张表的对应长度
+        table2fieldSize = context.getString("table2fieldSize");
+        Preconditions.checkNotNull(table2fieldSize, "table2fieldSize must be set!!");
     }
 
     /**
@@ -143,7 +149,14 @@ public class Source extends AbstractSource implements Configurable, PollableSour
         super.start();
         sourceCounter.start();
         FileMonitor.moveFile("/home/lzy1/","/home/lzy2/");
-
+        String[] table2fieldSizes=table2fieldSize.split(",");
+        for(String t2f:table2fieldSizes){
+            String[] splited=t2f.split("\\|");
+            table2fieldSizeMap.put(splited[0],Integer.valueOf(splited[1]));
+        }
+        for (Map.Entry<String, Integer> entry : table2fieldSizeMap.entrySet()) {
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        }
     }
 
     /**
