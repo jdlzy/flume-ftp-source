@@ -413,10 +413,13 @@ public class Source extends AbstractSource implements Configurable, PollableSour
         byte[] message = lastInfo;
         Event event = new SimpleEvent();
         Map<String, String> headers = new HashMap<>();
+
         headers.put("fileName", fileName);
         headers.put("filePath", filePath);
-        headers.put("state","success");
         headers.put("timestamp", String.valueOf(System.currentTimeMillis()));
+        //发送文件标识
+        String flag=fileName.split("_")[0];
+        headers.put("flag",flag);
         event.setBody(message);
         event.setHeaders(headers);
         try {

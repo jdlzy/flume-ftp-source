@@ -429,9 +429,10 @@ public XLSX2CSV(){}
     int columns = -1;
     //获取当前表的表头长度
     try {
-        Workbook wk = StreamingReader.builder().
-                rowCacheSize(100)
-                .bufferSize(2048).open(file);
+        Workbook wk = StreamingReader.builder()
+                .rowCacheSize(10)
+                .bufferSize(1024000)
+                .open(file);
         Sheet sheet = wk.getSheetAt(0);
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
