@@ -450,8 +450,9 @@ public class XLSX2CSV {
 //            }
 //        }
 //        wk.close();
-            String tableType = file.getName().split("_")[0];
-            columns = Source.table2fieldSizeMap.get(tableType);
+//            String tableType = file.getName().split("_")[0];
+//            columns = Source.table2fieldSizeMap.get(tableType);
+            columns=61;
             log.info("........................................");
             log.info("导入文件字段总数：" + columns);
         } catch (Exception e) {
