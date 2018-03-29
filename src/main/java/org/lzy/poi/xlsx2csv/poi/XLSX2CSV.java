@@ -392,16 +392,18 @@ public class XLSX2CSV {
         XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
 
         int index = 0;
-        while (iter.hasNext()) {
-            InputStream stream = iter.next();
-            String sheetName = iter.getSheetName();
-            log.info("Sheet[" + sheetName + "]正在解析中...");
+//        while (iter.hasNext()) {
+            //只解析第一页
+                InputStream stream = iter.next();
+                String sheetName = iter.getSheetName();
+                log.info("Sheet[" + sheetName + "]正在解析中...");
 //            this.output.println();
 //            this.output.println(sheetName + " [index=" + index + "]:");
-            processSheet(styles, strings, stream);
-            stream.close();
-            ++index;
-        }
+                processSheet(styles, strings, stream);
+                stream.close();
+                ++index;
+//        }
+
         return iter;
     }
 
@@ -450,9 +452,9 @@ public class XLSX2CSV {
 //            }
 //        }
 //        wk.close();
-//            String tableType = file.getName().split("_")[0];
-//            columns = Source.table2fieldSizeMap.get(tableType);
-            columns=61;
+            String tableType = file.getName().split("_")[0];
+            columns = Source.table2fieldSizeMap.get(tableType);
+//            columns=61;
             log.info("........................................");
             log.info("导入文件字段总数：" + columns);
         } catch (Exception e) {

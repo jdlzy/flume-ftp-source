@@ -17,6 +17,7 @@ import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.lzy.flume.source.ftp.client.filters.KeedioFileFilter;
+import org.lzy.flume.source.ftp.source.utils.PropertiesUtils;
 import org.lzy.poi.xlsx2csv.poi.monitor.FileMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     private String workingDirectory;
     private KeedioFileFilter keedioFileFilter;
 
+    private String inputBatchPath;
     private String table2fieldSize;
     public static Map<String,Integer> table2fieldSizeMap=new HashMap<String,Integer>();
     /**
@@ -76,6 +78,9 @@ public class Source extends AbstractSource implements Configurable, PollableSour
         } else {
             LOGGER.error("Folder " + keedioSource.getPathTohasmap().toString() + " not exists");
         }
+
+
+
         keedioSource.connect();
         sourceCounter = new SourceCounter("SOURCE." + getName());
         workingDirectory = keedioSource.getWorkingDirectory();
@@ -84,6 +89,8 @@ public class Source extends AbstractSource implements Configurable, PollableSour
         //获取每张表的对应长度
         table2fieldSize = context.getString("table2fieldSize");
         Preconditions.checkNotNull(table2fieldSize, "table2fieldSize must be set!!");
+        inputBatchPath = context.getString("inputBatchPath");
+        Preconditions.checkNotNull(inputBatchPath, "inputBatchPath must be set!!");
     }
 
     /**
@@ -144,6 +151,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     @Override
     public synchronized void start() {
         LOGGER.info("监控ftp文件开始 ...", this.getName());
+
         LOGGER.info("Source {} starting. Metrics: {}", getName(), sourceCounter);
         super.start();
         sourceCounter.start();
@@ -217,6 +225,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                         sourceCounter.incrementFilesCount(); //include all files, even not yet processed
                         position = 0L;
                         LOGGER.info("新增: " + elementName + " ,文件大小: " + keedioSource.getObjectSize(element)/1024+"KB");
+                        PropertiesUtils.modif(inputBatchPath,elementName.split("_")[0]);
                     } else { //known file
                         long prevSize = (long) keedioSource.getFileList().get(dirToList + "/" + elementName);
                         position = prevSize;
@@ -257,8 +266,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                                 sourceCounter.incrementFilesProcCount();
                             }
 
-                            LOGGER
-                                    .info("接收处理:  " + elementName + " ,总文件数: " + this.keedioSource.getFileList().size() + "\n");
+                            LOGGER  .info("接收处理:  " + elementName + " ,总文件数: " + this.keedioSource.getFileList().size() + "\n");
 
                         } else {
                             handleProcessError(elementName);

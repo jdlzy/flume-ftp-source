@@ -5,6 +5,8 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.lzy.poi.xlsx2csv.poi.monitor.FileListener;
 import org.lzy.poi.xlsx2csv.poi.monitor.FileMonitor;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -12,9 +14,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class monitorListenerTest {
     public static void main(String[] args)  {
-        String dir="E:/input/";
-        String outputPath="E:/output/";
-        FileMonitor.moveFile(dir,outputPath);
+//        String dir="E:/input/";
+//        String outputPath="E:/output/";
+//        FileMonitor.moveFile(dir,outputPath);
+        Date date=new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMM");
+        String year2month=sdf.format(date);
+
+        System.out.println(year2month);
 //        //轮询时间
 //        long interval= TimeUnit.SECONDS.toMillis(5);
 //        FileAlterationObserver observer=new FileAlterationObserver(dir);
