@@ -86,7 +86,8 @@ public class FileListener extends FileAlterationListenerAdaptor {
             }
         }
         else if (fileNameSplits[fileNameSplits.length-1].toLowerCase().equals("csv")){
-            String outputFileName =outputPath + fileName;
+            String outputFileName =outputPath + fileName.split("\\.")[0]+".process";
+            File outputFileLast=new File(outputPath + fileName);
             File outputFile=new File(outputFileName);
             FileInputStream ins = null;
             FileOutputStream out=null;
@@ -98,7 +99,7 @@ public class FileListener extends FileAlterationListenerAdaptor {
                 while((n=ins.read(b ))!=-1){
                     out.write(b, 0, n);
                 }
-
+                outputFile.renameTo(outputFileLast);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -126,6 +127,22 @@ public class FileListener extends FileAlterationListenerAdaptor {
     @Override
     public void onFileDelete(File file) {
         super.onFileDelete(file);
+        File dir=new File(outputPath);
+//        File TrxFiles[] = dir.listFiles();
+//        for(File curFile:TrxFiles ){
+//            curFile.delete();
+//        }
+        String[] fileNameSplits=file.getName().split("\\.");
+
+        if(fileNameSplits[fileNameSplits.length-1].equals("xlsx")) {
+            String outputFileName = fileNameSplits[0] + ".csv";
+            String outputFile = outputPath + outputFileName;
+            File deleteFile=new File(outputFile);
+            deleteFile.delete();
+        }else{
+            File deleteFile=new File(outputPath+file.getName());
+            deleteFile.delete();
+        }
     }
 
     @Override

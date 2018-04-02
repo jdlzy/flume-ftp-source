@@ -56,6 +56,10 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     private String inputBatchPath;
     private String table2fieldSize;
     public static Map<String,Integer> table2fieldSizeMap=new HashMap<String,Integer>();
+
+    private String excelPath;
+    private String csvPath;
+    private List fileTypeList=new ArrayList<String>(Arrays.asList("GSM-SITE","GSM-CELL","WCDMA-SITE","WCDMA-CELL","LTE-SITE","LTE-CELL","PHYSICS","GSM-SCENE","WCDMA-SCENE","LTE-SCENE"));
     /**
      * Request keedioSource to the factory
      *
@@ -91,6 +95,11 @@ public class Source extends AbstractSource implements Configurable, PollableSour
         Preconditions.checkNotNull(table2fieldSize, "table2fieldSize must be set!!");
         inputBatchPath = context.getString("inputBatchPath");
         Preconditions.checkNotNull(inputBatchPath, "inputBatchPath must be set!!");
+
+        excelPath = context.getString("excelPath");
+        Preconditions.checkNotNull(excelPath, "excelPath must be set!!");
+        csvPath = context.getString("working.directory");
+        Preconditions.checkNotNull(csvPath, "csvPath must be set!!");
     }
 
     /**
@@ -155,15 +164,15 @@ public class Source extends AbstractSource implements Configurable, PollableSour
         LOGGER.info("Source {} starting. Metrics: {}", getName(), sourceCounter);
         super.start();
         sourceCounter.start();
-        FileMonitor.moveFile("/home/lzy1/","/home/lzy2/");
+        FileMonitor.moveFile(excelPath,csvPath);
         String[] table2fieldSizes=table2fieldSize.split(",");
         for(String t2f:table2fieldSizes){
             String[] splited=t2f.split("\\|");
             table2fieldSizeMap.put(splited[0],Integer.valueOf(splited[1]));
         }
-        for (Map.Entry<String, Integer> entry : table2fieldSizeMap.entrySet()) {
-            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-        }
+//        for (Map.Entry<String, Integer> entry : table2fieldSizeMap.entrySet()) {
+//            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+//        }
     }
 
     /**
@@ -309,79 +318,18 @@ public class Source extends AbstractSource implements Configurable, PollableSour
             return false;
         }
         String[] fileSuffixs = fileName.split("\\.", -1);
-        String fileType = fileSuffixs[fileSuffixs.length - 1];
-
+        String fileSuffix = fileSuffixs[fileSuffixs.length - 1].toLowerCase();
+        //判断是否有指定前缀
+        Boolean isRightFileType=true;
+        if(!fileTypeList.contains(fileName.split("_")[0].toUpperCase())){
+            isRightFileType=false;
+            LOGGER.error("请为["+fileName+"]指定文件前缀");
+        }
         boolean successRead = true;
 
         if (keedioSource.isFlushLines()) {
             //判断是否为csv
-            if (fileType.equals("xlsx")) {
-                //在数据量太大的时候会导致zip解压异常，没有办法解决。是poi的冲突问题
-
-                DataFormatter formatter = new DataFormatter();
-                XSSFWorkbook workbook = null;
-                try {
-//                    inputStream.skip(position);
-//                     workbook = WorkbookFactory.create(inputStream);
-//                    ZipSecureFile.setMinInflateRatio(-1.0d);
-
-//                    Workbook wk = StreamingReader.builder().
-//                            rowCacheSize(100)
-//                            .bufferSize(4096).open(inputStream);
-//                    Sheet sheet = wk.getSheetAt(0);
-
-                    workbook = new XSSFWorkbook(inputStream);
-                    Sheet sheet = workbook.getSheetAt(0);
-
-                    for (Row row : sheet) {
-
-                        if (row.getRowNum() == 0) {
-                            continue;
-                        }
-                        StringBuilder sb = new StringBuilder();
-                        for (Cell cell : row) {
-                            sb.append(formatter.formatCellValue(cell));
-                            sb.append(",");
-                        }
-                        sb.deleteCharAt(sb.length() - 1);
-                        //输出每一行，使用逗号分隔
-                        processMessage(sb.toString().getBytes(), fileName, filePath);
-                    }
-
-//                    inputStream.close();
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    e.printStackTrace();
-                    successRead = false;
-                } catch (Exception e) {
-                    LOGGER.error(e.getMessage(), e);
-                    successRead = false;
-                }
-//                finally {
-//                    try {
-//                        workbook.close();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-/*                try {
-                    inputStream.skip(position);
-                    List<String[]> list= XLSX2CSV2.getRecords(inputStream,3);
-                    for(String[] records:list){
-                        StringBuilder sb=new StringBuilder("");
-
-                        for (String record:records){
-                            sb.append(record);
-                            sb.append(",");
-                        }
-                        processMessage(sb.deleteCharAt(sb.length() - 1).toString().getBytes(), fileName, filePath);
-                    }
-                    inputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }*/
-                //如果不是excel文件
-            } else {
+            if (fileSuffix.equals("csv")&&isRightFileType) {
                 try {
                     inputStream.skip(position);
                     try (BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
@@ -438,7 +386,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
         headers.put("filePath", filePath);
         headers.put("timestamp", String.valueOf(System.currentTimeMillis()));
         //发送文件标识
-        String flag=fileName.split("_")[0];
+        String flag=fileName.split("_")[0].toUpperCase();
         headers.put("flag",flag);
         event.setBody(message);
         event.setHeaders(headers);

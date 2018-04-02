@@ -433,7 +433,10 @@ public class XLSX2CSV {
      * @throws SAXException
      */
     public static void saveToCSV(File file, String outputFilePath) throws OpenXML4JException, IOException, ParserConfigurationException, SAXException {
-        File outFile = new File(outputFilePath);
+        //在传输过程中
+        String outputFilePathProcess =outputFilePath.replace(".csv",".process");
+        File outFile = new File(outputFilePathProcess);
+        File outputFilePathLast=new File(outputFilePath);
         int columns = -1;
         //获取当前表的表头长度
         try {
@@ -466,6 +469,7 @@ public class XLSX2CSV {
         XLSX2CSV xlsx2csv = new XLSX2CSV(p, output, columns - 1);
         log.info("正在解析[" + file.getPath() + "]......");
         xlsx2csv.process();
+        outFile.renameTo(outputFilePathLast);
         log.info("[" + file.getPath() + "]文件解析完成......");
         log.info("........................................");
 
