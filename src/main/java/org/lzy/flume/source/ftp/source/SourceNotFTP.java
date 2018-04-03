@@ -3,48 +3,35 @@
  */
 package org.lzy.flume.source.ftp.source;
 
-import java.io.*;
-import java.util.*;
-
 import com.google.common.base.Preconditions;
-import org.apache.flume.Context;
-import org.apache.flume.Event;
-import org.apache.flume.EventDeliveryException;
-import org.apache.flume.PollableSource;
+import org.apache.flume.*;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.event.SimpleEvent;
+import org.apache.flume.source.AbstractSource;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.lzy.flume.source.ftp.client.KeedioSource;
+import org.lzy.flume.source.ftp.client.factory.SourceFactory;
 import org.lzy.flume.source.ftp.client.filters.KeedioFileFilter;
+import org.lzy.flume.source.ftp.metrics.SourceCounter;
+import org.lzy.flume.source.ftp.source.utils.FTPSourceEventListener;
 import org.lzy.flume.source.ftp.source.utils.PropertiesUtils;
 import org.lzy.poi.xlsx2csv.poi.monitor.FileMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.flume.ChannelException;
 
-import org.lzy.flume.source.ftp.source.utils.FTPSourceEventListener;
-
-import org.lzy.flume.source.ftp.metrics.SourceCounter;
-
-import java.util.List;
-
-import org.lzy.flume.source.ftp.client.factory.SourceFactory;
-import org.lzy.flume.source.ftp.client.KeedioSource;
-
+import java.io.*;
 import java.nio.charset.Charset;
-
-import org.apache.flume.source.AbstractSource;
+import java.util.*;
 
 /**
  * @author luislazaro lalazaro@keedio.com - KEEDIO
  */
-public class Source extends AbstractSource implements Configurable, PollableSource {
+public class SourceNotFTP extends AbstractSource implements Configurable, PollableSource {
 
     private SourceFactory sourceFactory = new SourceFactory();
     private KeedioSource keedioSource;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Source.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SourceNotFTP.class);
     private static final short ATTEMPTS_MAX = 3; //  max limit attempts reconnection
     private static final long EXTRA_DELAY = 10000;
     private int counterConnect = 0;
@@ -105,10 +92,10 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     /**
      * @return Status , process source configured from context
      * 返回一个源数据的处理状态
-     * @throws org.apache.flume.EventDeliveryException
+     * @throws EventDeliveryException
      */
     @Override
-    public PollableSource.Status process() throws EventDeliveryException {
+    public Status process() throws EventDeliveryException {
 
         try {
             if (workingDirectory == null) {
@@ -147,10 +134,10 @@ public class Source extends AbstractSource implements Configurable, PollableSour
 
         try {
             Thread.sleep(keedioSource.getRunDiscoverDelay());
-            return PollableSource.Status.READY;     //source was successfully able to generate events
+            return Status.READY;     //source was successfully able to generate events
         } catch (InterruptedException inte) {
             LOGGER.error("Exception thrown in process while putting to sleep", inte);
-            return PollableSource.Status.BACKOFF;   //inform the runner thread to back off for a bit
+            return Status.BACKOFF;   //inform the runner thread to back off for a bit
         }
     }
 

@@ -288,6 +288,7 @@ public class XLSX2CSV {
 
                 // Print out any missing commas if needed
                 if (minColumns > 0) {
+
                     // Columns are 0 based
                     if (lastColumnNumber == -1) {
                         lastColumnNumber = 0;
@@ -441,6 +442,7 @@ public class XLSX2CSV {
         //获取当前表的表头长度
         try {
 
+
 //        Workbook wk = StreamingReader.builder()
 //                .rowCacheSize(10)
 //                .bufferSize(1024000)
@@ -469,6 +471,8 @@ public class XLSX2CSV {
         XLSX2CSV xlsx2csv = new XLSX2CSV(p, output, columns - 1);
         log.info("正在解析[" + file.getPath() + "]......");
         xlsx2csv.process();
+        output.close();
+        p.close();
         outFile.renameTo(outputFilePathLast);
         log.info("[" + file.getPath() + "]文件解析完成......");
         log.info("........................................");
