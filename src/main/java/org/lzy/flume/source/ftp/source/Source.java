@@ -235,6 +235,11 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                         position = 0L;
                         LOGGER.info("新增: " + elementName + " ,文件大小: " + keedioSource.getObjectSize(element)/1024+"KB");
                         PropertiesUtils.modif(inputBatchPath,elementName.split("_")[0]);
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     } else { //known file
                         long prevSize = (long) keedioSource.getFileList().get(dirToList + "/" + elementName);
                         position = prevSize;
