@@ -234,6 +234,8 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                         sourceCounter.incrementFilesCount(); //include all files, even not yet processed
                         position = 0L;
                         LOGGER.info("新增: " + elementName + " ,文件大小: " + keedioSource.getObjectSize(element)/1024+"KB");
+                        PropertiesUtils.modif(inputBatchPath,elementName.split("_")[0]);
+
                     } else { //known file
                         long prevSize = (long) keedioSource.getFileList().get(dirToList + "/" + elementName);
                         position = prevSize;
@@ -373,7 +375,6 @@ public class Source extends AbstractSource implements Configurable, PollableSour
 
             }
         }
-        PropertiesUtils.modif(inputBatchPath,fileName.split("_")[0]);
         return successRead;
     }
 
