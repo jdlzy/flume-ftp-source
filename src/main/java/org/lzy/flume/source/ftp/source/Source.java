@@ -234,12 +234,6 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                         sourceCounter.incrementFilesCount(); //include all files, even not yet processed
                         position = 0L;
                         LOGGER.info("新增: " + elementName + " ,文件大小: " + keedioSource.getObjectSize(element)/1024+"KB");
-                        PropertiesUtils.modif(inputBatchPath,elementName.split("_")[0]);
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
                     } else { //known file
                         long prevSize = (long) keedioSource.getFileList().get(dirToList + "/" + elementName);
                         position = prevSize;
@@ -318,7 +312,6 @@ public class Source extends AbstractSource implements Configurable, PollableSour
      * @return boolean
      */
     public boolean readStream(InputStream inputStream, long position, String fileName, String filePath) {
-        LOGGER.info("fileName:" + fileName);
         if (inputStream == null) {
             return false;
         }
@@ -331,6 +324,9 @@ public class Source extends AbstractSource implements Configurable, PollableSour
 
             LOGGER.error("请为["+fileName+"]指定对应的文件前缀=>"+fileTypeList.toString());
         }
+
+
+
         boolean successRead = true;
 
         if (keedioSource.isFlushLines()) {
@@ -339,7 +335,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                 try {
                     inputStream.skip(position);
                     try (BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
-                        String line = null;
+                        String line;
                         int index=0;
                         while ((line = in.readLine()) != null) {
                             index++;
@@ -349,6 +345,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
 
                     }
                     inputStream.close();
+
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                     successRead = false;
@@ -376,6 +373,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
 
             }
         }
+        PropertiesUtils.modif(inputBatchPath,fileName.split("_")[0]);
         return successRead;
     }
 
